@@ -1,0 +1,13 @@
+# ZenkOS : liste FERMÉE des services que le mode jeu peut arrêter.
+# Fichier réservé à root. Un service absent ou inactif est simplement ignoré.
+# NE PAS mettre ici : bluetooth (manettes), réseau, son, affichage, dbus.
+cups.service
+cups-browsed.service
+ModemManager.service
+avahi-daemon.service
+packagekit.service
+apt-daily.timer
+apt-daily-upgrade.timer
+man-db.timer
+fwupd-refresh.timer
+unattended-upgrades.service

@@ -1,0 +1,75 @@
+#!/bin/bash
+# zenk-services : coupe puis restaure une liste FERMÉE de services (mode jeu léger).
+# Lancé uniquement via sudo par zenk-run. N'accepte que : stop | start | status.
+set -euo pipefail
+
+CONF=/etc/zenkos/gamemode-services.list
+STATE_DIR=${ZENK_STATE_DIR:-/run/zenkos}
+STATE=$STATE_DIR/stopped.list
+FAILSAFE_UNIT=zenk-failsafe
+FAILSAFE_DELAY=4h
+
+if [[ ${ZENK_TEST:-0} != 1 && $EUID -ne 0 ]]; then
+	echo "zenk-services: doit tourner en root (via sudo)" >&2
+	exit 1
+fi
+
+mkdir -p "$STATE_DIR"
+exec 9>"$STATE_DIR/lock"
+flock 9
+
+# Unités valides uniquement (.service/.timer, caractères sûrs) : rien d'autre n'est jamais exécuté.
+read_list() {
+	{ grep -vE '^[[:space:]]*(#|$)' "$CONF" || true; } |
+		awk '{print $1}' |
+		{ grep -E '^[A-Za-z0-9@:._-]+\.(service|timer)$' || true; }
+}
+
+stop_all() {
+	if [[ -f $STATE ]]; then
+		echo "zenk-services: déjà actif" >&2
+		return 0
+	fi
+	: >"$STATE"
+	local unit
+	while read -r unit; do
+		if systemctl is-active --quiet "$unit"; then
+			if systemctl stop "$unit"; then
+				echo "$unit" >>"$STATE"
+			else
+				echo "zenk-services: échec d'arrêt de $unit" >&2
+			fi
+		fi
+	done < <(read_list)
+	# Filet de sécurité : si zenk-run est tué brutalement, tout redémarre tout seul.
+	systemd-run --quiet --unit="$FAILSAFE_UNIT" --on-active="$FAILSAFE_DELAY" \
+		/usr/local/lib/zenkos/zenk-services start || true
+}
+
+start_all() {
+	[[ -f $STATE ]] || return 0
+	local unit
+	while read -r unit; do
+		if [[ -n $unit ]]; then
+			systemctl start "$unit" || echo "zenk-services: échec de démarrage de $unit" >&2
+		fi
+	done <"$STATE"
+	rm -f "$STATE"
+	systemctl stop "$FAILSAFE_UNIT.timer" 2>/dev/null || true
+}
+
+case "${1:-}" in
+stop) stop_all ;;
+start) start_all ;;
+status)
+	if [[ -f $STATE ]]; then
+		echo "actif ($(wc -l <"$STATE") service(s) coupé(s))"
+	else
+		echo "inactif"
+	fi
+	;;
+*)
+	echo "usage: zenk-services stop|start|status" >&2
+	exit 2
+	;;
+esac

@@ -1,0 +1,65 @@
+# ---- Bureau : XFCE complet mais léger ----
+xfce4
+xfce4-terminal
+xfce4-power-manager
+xfce4-pulseaudio-plugin
+xfce4-screenshooter
+xfce4-taskmanager
+thunar-volman
+mousepad
+ristretto
+file-roller
+lightdm
+lightdm-gtk-greeter
+network-manager
+network-manager-gnome
+udisks2
+gvfs
+xdg-user-dirs
+fonts-noto-core
+fonts-dejavu
+
+# ---- Son ----
+pipewire
+pipewire-pulse
+wireplumber
+pavucontrol
+
+# ---- Navigateur ----
+firefox-esr
+firefox-esr-l10n-fr
+
+# ---- Langue / clavier ----
+locales
+console-setup
+keyboard-configuration
+
+# ---- Graphismes (pilotes libres) ----
+mesa-vulkan-drivers
+libgl1-mesa-dri
+mesa-utils
+vulkan-tools
+
+# ---- Micrologiciels (Wi-Fi, GPU, microcode) ----
+firmware-linux
+firmware-misc-nonfree
+firmware-amd-graphics
+firmware-realtek
+firmware-iwlwifi
+firmware-atheros
+intel-microcode
+amd64-microcode
+
+# ---- Optimisation / mode jeu ----
+zram-tools
+earlyoom
+gamemode
+sudo
+procps
+util-linux
+psmisc
+htop
+btop
+curl
+git
+python3

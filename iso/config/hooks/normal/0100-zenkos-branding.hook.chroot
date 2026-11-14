@@ -1,0 +1,15 @@
+#!/bin/sh
+# Identité visible de ZenkOS. ID=debian est conservé volontairement :
+# beaucoup d'outils (Steam, installateurs...) se fient à ce champ.
+set -e
+cat > /usr/lib/os-release <<'OSR'
+PRETTY_NAME="ZenkOS 0.1 (alpha, base Debian 13)"
+NAME="ZenkOS"
+VERSION_ID="0.1"
+VERSION="0.1 (alpha)"
+VERSION_CODENAME=trixie
+ID=debian
+VARIANT="ZenkOS"
+OSR
+chmod 0440 /etc/sudoers.d/zenkos-gamemode
+chmod 0755 /usr/local/bin/zenk-run /usr/local/lib/zenkos/zenk-services

@@ -1,0 +1,4 @@
+# ZenkOS : RAM compressée (zram-tools)
+ALGO=zstd
+PERCENT=50
+PRIORITY=100

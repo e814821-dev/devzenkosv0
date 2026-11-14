@@ -1,0 +1,48 @@
+#!/bin/bash
+# zenk-run : lance un jeu en "mode jeu léger" ZenkOS.
+#   Steam : options de lancement  ->  zenk-run %command%
+#   Terminal :                    ->  zenk-run ./mon-jeu
+# Coupe les services inutiles, lance le jeu, puis restaure tout (même si le jeu plante).
+set -u
+
+if [[ $# -lt 1 ]]; then
+	echo "usage: zenk-run <commande> [arguments...]   (Steam : zenk-run %command%)" >&2
+	exit 2
+fi
+
+HELPER=${ZENK_HELPER:-/usr/local/lib/zenkos/zenk-services}
+STATE_FILE=${ZENK_STATE_FILE:-/run/zenkos/stopped.list}
+LOG_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/zenkos"
+LOG="$LOG_DIR/gamemode.csv"
+mkdir -p "$LOG_DIR"
+
+used_mb() { free -m | awk '/^Mem:/ {print $3}'; }
+
+[[ -f $LOG ]] || echo "date,jeu,ram_avant_mo,ram_apres_coupe_mo,ram_fin_mo,services_coupes" >"$LOG"
+
+# shellcheck disable=SC2317  # appelée via trap
+restore() {
+	sudo -n "$HELPER" start || echo "zenk-run: restauration impossible (sudo)" >&2
+}
+trap restore EXIT
+trap 'exit 130' INT TERM HUP
+
+before=$(used_mb)
+if ! sudo -n "$HELPER" stop; then
+	echo "zenk-run: mode léger indisponible, lancement normal" >&2
+fi
+sleep 1
+after=$(used_mb)
+count=$(wc -l <"$STATE_FILE" 2>/dev/null || echo 0)
+echo "[ZenkOS] RAM utilisée : ${before} Mo -> ${after} Mo (${count} service(s) coupé(s))" >&2
+
+if command -v gamemoderun >/dev/null 2>&1; then
+	gamemoderun "$@"
+else
+	"$@"
+fi
+rc=$?
+
+end=$(used_mb)
+echo "$(date -Is),$(basename -- "$1"),$before,$after,$end,$count" >>"$LOG"
+exit $rc

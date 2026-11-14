@@ -1,0 +1,19 @@
+#!/bin/sh
+# ZenkOS : configuration live-build (Debian 13 "trixie" + XFCE)
+set -e
+lb config noauto \
+	--mode debian \
+	--distribution trixie \
+	--architectures amd64 \
+	--archive-areas "main contrib non-free non-free-firmware" \
+	--apt-recommends false \
+	--binary-images iso-hybrid \
+	--bootloaders "syslinux,grub-efi" \
+	--debian-installer live \
+	--iso-application "ZenkOS" \
+	--iso-publisher "Projet ZenkOS" \
+	--iso-volume "ZENKOS_0_1" \
+	--linux-flavours amd64 \
+	--memtest none \
+	--bootappend-live "boot=live components quiet splash hostname=zenkos username=zenk locales=fr_FR.UTF-8 keyboard-layouts=fr timezone=Europe/Paris" \
+	"${@}"

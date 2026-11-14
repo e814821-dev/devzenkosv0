@@ -1,0 +1,2 @@
+# ZenkOS : le mode jeu peut lancer UNIQUEMENT ces deux commandes, sans mot de passe.
+%sudo ALL=(root) NOPASSWD: /usr/local/lib/zenkos/zenk-services stop, /usr/local/lib/zenkos/zenk-services start
